@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: manager
+  name: manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manager
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        app: manager
+    spec:
+      containers:
+        - image:  localhost:5000/manager
+          imagePullPolicy: Always
+          name: manager
+          ports:
+            - containerPort: 80
+          env:
+            - name: pg_pass
+              valueFrom:
+                secretKeyRef:
+                  name: integrator-postgresql
+                  key: postgres-password
+            - name: pg_user
+              value: postgres
+            - name: pg_ip
+              value: POSTGRES_IP_SED
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: manager
+spec:
+  ports:
+    - port: 8000
+      targetPort: 80
+      name: http
+  selector:
+    app: manager
+---
+

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: reader
+  name: reader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reader
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        app: reader
+    spec:
+      containers:
+        - image:  localhost:5000/reader
+          imagePullPolicy: Always
+          name: reader
+          ports:
+            - containerPort: 80
+          env:
+            - name: pg_pass
+              valueFrom:
+                secretKeyRef:
+                  name: integrator-postgresql
+                  key: postgres-password
+            - name: pg_user
+              value: postgres
+            - name: pg_ip
+              value: POSTGRES_IP_SED
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reader
+spec:
+  ports:
+    - port: 8000
+      targetPort: 80
+      name: http
+  selector:
+    app: reader
+---
+
